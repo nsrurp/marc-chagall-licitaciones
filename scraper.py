@@ -363,13 +363,13 @@ def scrape_unsa_rectorado() -> list[dict]:
 # ── SCRAPER 3 — SaltaCompra ───────────────────────────────────────────────────
 
 def scrape_salta_compra() -> list[dict]:
-    BASE = "https://compras.salta.gob.ar"
-    # Endpoint público de licitaciones abiertas (estructura típica de SIDECO/ArBA)
+    BASE = "https://saltacompra.gob.ar"
+    # Procesos con apertura próxima y últimos 30 días
     URLS_INTENTAR = [
-        f"{BASE}/licitaciones",
-        f"{BASE}/licitaciones/abiertas",
-        f"{BASE}/compras/licitaciones",
-        f"{BASE}/public/licitaciones",
+        f"{BASE}/Compras.aspx?qs=W1HXHGHtH10=",   # apertura próxima
+        f"{BASE}/Compras.aspx?qs=iouVZE0yWCs=",   # últimos 30 días
+        f"{BASE}/BuscarAvanzado.aspx",
+        f"{BASE}/Compras.aspx",
     ]
     log.info("Scrapeando SaltaCompra: %s", BASE)
 
@@ -383,9 +383,10 @@ def scrape_salta_compra() -> list[dict]:
         resp = get(url)
         if resp:
             soup = BeautifulSoup(resp.text, "lxml")
-            # Verificar si tiene contenido de licitaciones
-            if soup.find(string=re.compile(r"licitac", re.I)):
+            # Verificar si tiene contenido de compras/licitaciones
+            if soup.find(string=re.compile(r"licitac|proceso|compra", re.I)):
                 url_exitosa = url
+                log.info("SaltaCompra: URL exitosa → %s", url)
                 break
 
     if not soup or not url_exitosa:
