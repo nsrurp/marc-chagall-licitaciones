@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Datos generados (no versionar PDFs ni Excel)
+pliegos/
+cotizaciones/
+logs/
+licitaciones.json
+alertas.json
+
+# Credenciales — NUNCA versionar
+config.json
+
+# Config de ejemplo sí se versiona (ver config.example.json)
+!config.example.json
+
+# OS
+.DS_Store
+Thumbs.db

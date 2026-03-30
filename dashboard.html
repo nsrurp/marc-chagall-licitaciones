@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marc Chagall — Licitaciones</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset y variables ────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0A0C10;
+      --bg2:        #0F1118;
+      --bg3:        #13161E;
+      --bg4:        #1A1D24;
+      --border:     #2A2D35;
+      --dorado:     #C8A84B;
+      --dorado2:    #E6C55A;
+      --text:       #E8E8E8;
+      --text2:      #A0A4AE;
+      --text3:      #6B6F7A;
+      --verde:      #2ECC71;
+      --rojo:       #E74C3C;
+      --amarillo:   #F39C12;
+      --azul:       #3498DB;
+      --radio:      8px;
+      --radio-lg:   12px;
+      --sombra:     0 4px 24px rgba(0,0,0,.5);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Scrollbar ────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+    /* ── Layout principal ─────────────────────────────────── */
+    .layout { display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ──────────────────────────────────────────── */
+    .sidebar {
+      width: 220px;
+      min-width: 220px;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar-logo {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-logo h1 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--dorado);
+      letter-spacing: .5px;
+      line-height: 1.3;
+    }
+
+    .sidebar-logo p {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 3px;
+    }
+
+    .sidebar-nav {
+      padding: 12px 0;
+      flex: 1;
+    }
+
+    .nav-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 8px 20px 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 20px;
+      color: var(--text2);
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: all .15s;
+      user-select: none;
+    }
+
+    .nav-item:hover { background: var(--bg3); color: var(--text); }
+    .nav-item.active {
+      background: var(--bg3);
+      color: var(--dorado);
+      border-left-color: var(--dorado);
+    }
+
+    .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+    .nav-item .label { font-size: 13px; font-weight: 500; }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--rojo);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 10px;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    .nav-badge.amarillo { background: var(--amarillo); color: var(--bg); }
+
+    .sidebar-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    /* ── Contenido principal ──────────────────────────────── */
+    .main {
+      flex: 1;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Banner de alertas ────────────────────────────────── */
+    #banner-alertas { display: none; }
+
+    .banner {
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      animation: slideDown .3s ease;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+
+    .banner.rojo    { background: rgba(231,76,60,.15); border-bottom: 1px solid rgba(231,76,60,.3); color: #FF8080; }
+    .banner.amarillo { background: rgba(243,156,18,.12); border-bottom: 1px solid rgba(243,156,18,.25); color: #F4C164; }
+
+    .banner-items { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .banner-chip {
+      background: rgba(255,255,255,.08);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .banner-chip:hover { background: rgba(255,255,255,.15); }
+
+    /* ── Header de página ─────────────────────────────────── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 0;
+    }
+
+    .page-title { font-size: 20px; font-weight: 700; }
+    .page-subtitle { font-size: 13px; color: var(--text3); margin-top: 2px; }
+
+    .header-actions { display: flex; gap: 8px; }
+
+    /* ── Botones ──────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: var(--radio);
+      border: 1px solid var(--border);
+      background: var(--bg3);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn:hover { background: var(--bg4); border-color: var(--text3); }
+    .btn:active { transform: scale(.97); }
+
+    .btn-primary {
+      background: var(--dorado);
+      border-color: var(--dorado);
+      color: var(--bg);
+    }
+    .btn-primary:hover { background: var(--dorado2); border-color: var(--dorado2); }
+
+    .btn-danger {
+      background: rgba(231,76,60,.15);
+      border-color: rgba(231,76,60,.4);
+      color: var(--rojo);
+    }
+    .btn-danger:hover { background: rgba(231,76,60,.25); }
+
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn-icon { padding: 7px; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; pointer-events: none; }
+
+    /* ── Secciones / páginas ──────────────────────────────── */
+    .page { display: none; padding: 20px 24px 40px; }
+    .page.active { display: block; }
+
+    /* ── Cards resumen ────────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .stat-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radio-lg);
+      padding: 16px 18px;
+      transition: border-color .2s;
+    }
+    .stat-card:hover { border-color: var(--dorado); }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--text3);
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--dorado);
+      line-height: 1;
+    }
+
+    .stat-value.verde  { color: var(--verde); }
+    .stat-value.rojo   { color: var(--rojo); }
+    .stat-value.amarillo { color: var(--amarillo); }
+    .stat-value.azul   { color: var(--azul); }
+
+    .stat-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+    /* ── Barra de filtros ─────────────────────────────────── */
+    .filters {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 0;
+      flex-wrap: wrap;
+    }
+
+    .filters input, .filters select {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: var(--radio);
+      padding: 7px 12px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .filters input:focus, .filters select:focus { border-color: var(--dorado); }
+    .filters input { flex: 1; min-width: 200px; }
+
+    /* ── Tabla ────────────────────────────────────────────── */
+    .table-wrap {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radio-lg);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      background: var(--bg4);
+      color: var(--text3);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      padding: 11px 14px;
+      text-align: left;
+      white-space: nowrap;
+      border-bottom: 1px solid var(--border);
+    }
+
+    thead th.sortable { cursor: pointer; user-select: none; }
+    thead th.sortable:hover { color: var(--dorado); }
+    thead th .sort-icon { margin-left: 4px; opacity: .4; }
+    thead th.sorted .sort-icon { opacity: 1; color: var(--dorado); }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .1s;
+      cursor: pointer;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--bg4); }
+
+    tbody td {
+      padding: 11px 14px;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    .td-title { font-weight: 500; max-width: 280px; }
+    .td-title span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .td-org { font-size: 12px; color: var(--text3); }
+
+    .td-fecha { white-space: nowrap; }
+    .td-fecha .fecha-val { font-weight: 500; }
+    .td-fecha .hora-val  { font-size: 11px; color: var(--text3); }
+
+    /* ── Badges ───────────────────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-activa    { background: rgba(46,204,113,.15); color: var(--verde); border: 1px solid rgba(46,204,113,.25); }
+    .badge-vencida   { background: rgba(107,111,122,.15); color: var(--text3); border: 1px solid var(--border); }
+    .badge-cotizada  { background: rgba(52,152,219,.15); color: var(--azul); border: 1px solid rgba(52,152,219,.25); }
+    .badge-pendiente { background: rgba(243,156,18,.12); color: var(--amarillo); border: 1px solid rgba(243,156,18,.25); }
+    .badge-critica   { background: rgba(231,76,60,.15); color: var(--rojo); border: 1px solid rgba(231,76,60,.3); }
+    .badge-sin-items { background: rgba(107,111,122,.1); color: var(--text3); border: 1px solid var(--border); font-style: italic; }
+
+    /* ── Empty state ──────────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text3);
+    }
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state h3 { font-size: 16px; color: var(--text2); margin-bottom: 6px; }
+
+    /* ── Loading ──────────────────────────────────────────── */
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--dorado);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Modal ────────────────────────────────────────────── */
+    .modal-backdrop {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radio-lg);
+      width: min(900px, 95vw);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--sombra);
+      animation: fadeUp .2s ease;
+    }
+
+    @keyframes fadeUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h2 { font-size: 16px; font-weight: 700; }
+    .modal-header .modal-meta { font-size: 12px; color: var(--text3); margin-top: 3px; }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text3);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+      border-radius: 4px;
+      transition: color .15s;
+    }
+    .modal-close:hover { color: var(--text); }
+
+    .modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+    .modal-footer { padding: 14px 24px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+
+    /* ── Tabs del modal ───────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      background: var(--bg);
+      padding: 4px;
+      border-radius: var(--radio);
+      margin-bottom: 16px;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text3);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { background: var(--bg3); color: var(--dorado); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── Tabla de ítems ───────────────────────────────────── */
+    .items-table-wrap { overflow-x: auto; }
+    .items-table { font-size: 12px; }
+    .items-table td, .items-table th { padding: 8px 10px; }
+    .items-table tbody tr:hover { background: var(--bg4); }
+
+    .precio-ok    { color: var(--verde); font-weight: 600; }
+    .precio-null  { color: var(--text3); font-style: italic; }
+
+    /* ── Info rows (modal detalle) ────────────────────────── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .info-row {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radio);
+      padding: 10px 14px;
+    }
+    .info-row .key { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .7px; color: var(--text3); margin-bottom: 3px; }
+    .info-row .val { font-size: 13px; font-weight: 500; }
+
+    /* ── Toast ────────────────────────────────────────────── */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radio);
+      padding: 12px 16px;
+      font-size: 13px;
+      box-shadow: var(--sombra);
+      animation: toastIn .25s ease;
+      max-width: 320px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    @keyframes toastIn {
+      from { transform: translateX(60px); opacity: 0; }
+      to   { transform: translateX(0); opacity: 1; }
+    }
+    .toast.ok   { border-left: 3px solid var(--verde); }
+    .toast.err  { border-left: 3px solid var(--rojo); }
+    .toast.info { border-left: 3px solid var(--dorado); }
+
+    /* ── Config page ──────────────────────────────────────── */
+    .config-section {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radio-lg);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .config-section h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--dorado);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .7px; color: var(--text3); }
+
+    .form-input {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: var(--radio);
+      padding: 9px 12px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s;
+      width: 100%;
+    }
+    .form-input:focus { border-color: var(--dorado); }
+    .form-input[type=number] { -moz-appearance: textfield; }
+
+    .form-hint { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+    /* ── Alertas page ─────────────────────────────────────── */
+    .alert-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radio-lg);
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: border-color .2s;
+    }
+    .alert-card.critica   { border-left: 4px solid var(--rojo); }
+    .alert-card.advertencia { border-left: 4px solid var(--amarillo); }
+    .alert-card.vencida   { border-left: 4px solid var(--text3); opacity: .7; }
+
+    .alert-emoji { font-size: 22px; }
+    .alert-info { flex: 1; }
+    .alert-titulo { font-size: 14px; font-weight: 600; }
+    .alert-meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
+    .alert-dias {
+      font-size: 18px;
+      font-weight: 700;
+      min-width: 60px;
+      text-align: center;
+    }
+    .alert-dias.critica   { color: var(--rojo); }
+    .alert-dias.advertencia { color: var(--amarillo); }
+
+    /* ── Progress bar ─────────────────────────────────────── */
+    .progress-bar {
+      height: 4px;
+      background: var(--bg4);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--dorado);
+      transition: width .3s;
+    }
+
+    /* ── Responsive ───────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .info-grid { grid-template-columns: 1fr; }
+      .form-grid  { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Layout ──────────────────────────────────────────────────────────────── -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <h1>Marc Chagall</h1>
+      <p>Laboratorio Fotográfico</p>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-label">Principal</div>
+      <div class="nav-item active" data-page="dashboard" onclick="navTo('dashboard', this)">
+        <span class="icon">📊</span>
+        <span class="label">Dashboard</span>
+      </div>
+      <div class="nav-item" data-page="licitaciones" onclick="navTo('licitaciones', this)">
+        <span class="icon">📋</span>
+        <span class="label">Licitaciones</span>
+      </div>
+      <div class="nav-item" data-page="alertas" onclick="navTo('alertas', this)">
+        <span class="icon">🔔</span>
+        <span class="label">Alertas</span>
+        <span class="nav-badge" id="badge-alertas" style="display:none"></span>
+      </div>
+      <div class="nav-label" style="margin-top:8px;">Herramientas</div>
+      <div class="nav-item" data-page="config" onclick="navTo('config', this)">
+        <span class="icon">⚙️</span>
+        <span class="label">Configuración</span>
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <div id="last-update" style="font-size:10px;"></div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Banner alertas -->
+    <div id="banner-alertas"></div>
+
+    <!-- ── Página: Dashboard ───────────────────────────────────────────────── -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Panel de Control</div>
+          <div class="page-subtitle" id="dash-subtitle">Cargando datos…</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-sm" onclick="scrapeManual()" id="btn-scrape">
+            <span>🔄</span> Actualizar datos
+          </button>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total</div>
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-sub">licitaciones</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Activas</div>
+          <div class="stat-value verde" id="stat-activas">—</div>
+          <div class="stat-sub">en curso</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Con cotización</div>
+          <div class="stat-value azul" id="stat-cotizadas">—</div>
+          <div class="stat-sub">listas para presentar</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Sin cotizar</div>
+          <div class="stat-value amarillo" id="stat-sin-cot">—</div>
+          <div class="stat-sub">requieren acción</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Urgentes</div>
+          <div class="stat-value rojo" id="stat-urgentes">—</div>
+          <div class="stat-sub">≤ 3 días</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Esta semana</div>
+          <div class="stat-value amarillo" id="stat-semana">—</div>
+          <div class="stat-sub">abren en 7 días</div>
+        </div>
+      </div>
+
+      <!-- Tabla rápida de próximas -->
+      <div style="margin-top:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <h2 style="font-size:15px;font-weight:600;">Próximas aperturas</h2>
+          <button class="btn btn-sm" onclick="navTo('licitaciones', document.querySelector('[data-page=licitaciones]'))">Ver todas →</button>
+        </div>
+        <div class="table-wrap" id="tabla-proximas"></div>
+      </div>
+    </div>
+
+    <!-- ── Página: Licitaciones ────────────────────────────────────────────── -->
+    <div class="page" id="page-licitaciones">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Licitaciones</div>
+          <div class="page-subtitle" id="licit-count">—</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-sm" onclick="scrapeManual()">
+            <span>🔄</span> Scrape
+          </button>
+        </div>
+      </div>
+
+      <div class="filters">
+        <input type="text" id="filtro-texto" placeholder="🔍  Buscar por título, organismo, expediente…" oninput="filtrarTabla()" />
+        <select id="filtro-estado" onchange="filtrarTabla()">
+          <option value="">Todos los estados</option>
+          <option value="activa">Activas</option>
+          <option value="vencida">Vencidas</option>
+        </select>
+        <select id="filtro-organismo" onchange="filtrarTabla()">
+          <option value="">Todos los organismos</option>
+        </select>
+        <select id="filtro-cot" onchange="filtrarTabla()">
+          <option value="">Todas las cotizaciones</option>
+          <option value="con">Con cotización</option>
+          <option value="sin">Sin cotización</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table id="tabla-licitaciones">
+          <thead>
+            <tr>
+              <th class="sortable" onclick="sortTabla('organismo')">Organismo <span class="sort-icon">↕</span></th>
+              <th class="sortable" onclick="sortTabla('titulo')">Título / Expediente <span class="sort-icon">↕</span></th>
+              <th class="sortable" onclick="sortTabla('fecha_apertura')">Apertura <span class="sort-icon">↕</span></th>
+              <th>Ítems</th>
+              <th>Cotización</th>
+              <th>Alerta</th>
+              <th style="text-align:center;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-licitaciones">
+            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3);">
+              <div class="spinner"></div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Página: Alertas ─────────────────────────────────────────────────── -->
+    <div class="page" id="page-alertas">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Alertas</div>
+          <div class="page-subtitle">Licitaciones con vencimiento próximo</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-sm" onclick="cargarAlertas()">🔄 Actualizar</button>
+        </div>
+      </div>
+      <div style="margin-top:16px;" id="alertas-container">
+        <div class="empty-state"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- ── Página: Config ──────────────────────────────────────────────────── -->
+    <div class="page" id="page-config">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Configuración</div>
+          <div class="page-subtitle">Parámetros del sistema</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary" onclick="guardarConfig()">💾 Guardar cambios</button>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;">
+
+        <div class="config-section">
+          <h3>🏢 Empresa</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Nombre empresa</label>
+              <input class="form-input" type="text" id="cfg-empresa" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">CUIT</label>
+              <input class="form-input" type="text" id="cfg-cuit" placeholder="30-00000000-0" />
+            </div>
+          </div>
+        </div>
+
+        <div class="config-section">
+          <h3>💰 Cotización</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Margen default (%)</label>
+              <input class="form-input" type="number" id="cfg-margen" min="0" max="100" step="0.5" />
+              <span class="form-hint">Porcentaje de ganancia aplicado por defecto</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">IVA (%)</label>
+              <input class="form-input" type="number" id="cfg-iva" min="0" max="30" step="0.5" />
+            </div>
+          </div>
+        </div>
+
+        <div class="config-section">
+          <h3>📧 Alertas por Email</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Email de destino</label>
+              <input class="form-input" type="email" id="cfg-email" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gmail remitente (SMTP)</label>
+              <input class="form-input" type="email" id="cfg-smtp-gmail" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contraseña de app Gmail</label>
+              <input class="form-input" type="password" id="cfg-smtp-pass" placeholder="App password (no la de tu cuenta)" />
+              <span class="form-hint">Generar en: Cuenta Google → Seguridad → Contraseñas de apps</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-section">
+          <h3>🔍 Google Custom Search (opcional)</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">API Key</label>
+              <input class="form-input" type="text" id="cfg-google-key" placeholder="AIza..." />
+              <span class="form-hint">Mejora la búsqueda de precios cuando ML falla</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">CSE ID</label>
+              <input class="form-input" type="text" id="cfg-google-cse" placeholder="0123456789abcdef0" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+
+<!-- ── Modal detalle licitación ──────────────────────────────────────────── -->
+<div class="modal-backdrop" id="modal-backdrop" onclick="cerrarModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div>
+        <h2 id="modal-titulo">—</h2>
+        <div class="modal-meta" id="modal-meta">—</div>
+      </div>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Info rápida -->
+      <div class="info-grid" id="modal-info-grid"></div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('items', this)">📦 Ítems</div>
+        <div class="tab" onclick="switchTab('cotizacion', this)">💰 Cotización</div>
+      </div>
+
+      <!-- Tab: Ítems -->
+      <div class="tab-content active" id="tab-items">
+        <div id="items-content"></div>
+      </div>
+
+      <!-- Tab: Cotización -->
+      <div class="tab-content" id="tab-cotizacion">
+        <div id="cotizacion-content"></div>
+      </div>
+    </div>
+
+    <div class="modal-footer" id="modal-footer">
+      <button class="btn btn-sm" onclick="cerrarModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast container ───────────────────────────────────────────────────── -->
+<div id="toast-container"></div>
+
+
+<!-- ── JavaScript ─────────────────────────────────────────────────────────── -->
+<script>
+// ── Estado global ────────────────────────────────────────────────────────────
+const API = 'http://127.0.0.1:5000';
+let licitaciones = [];
+let alertas = [];
+let sortConfig = { key: 'fecha_apertura', dir: 1 };
+let licitacionActual = null;
+
+// ── Utilidades ────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const $$ = sel => document.querySelectorAll(sel);
+
+function fmt(v) { return v ?? '—'; }
+
+function fmtFecha(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+
+function fmtHora(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  return d.toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit' });
+}
+
+function fmtMoney(v) {
+  if (v == null) return '—';
+  return new Intl.NumberFormat('es-AR', { style:'currency', currency:'ARS', minimumFractionDigits:2 }).format(v);
+}
+
+function diasRestantes(iso) {
+  if (!iso) return null;
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const fecha = new Date(iso); fecha.setHours(0,0,0,0);
+  return Math.round((fecha - hoy) / 86400000);
+}
+
+function nivelAlerta(dias) {
+  if (dias === null) return null;
+  if (dias <= 0)  return 'vencida';
+  if (dias <= 3)  return 'critica';
+  if (dias <= 7)  return 'advertencia';
+  return null;
+}
+
+function badgeCotizacion(lic) {
+  if (!lic.items || lic.items.length === 0)
+    return '<span class="badge badge-sin-items">Sin ítems</span>';
+  if (lic.cotizacion)
+    return '<span class="badge badge-cotizada">✅ Cotizada</span>';
+  return '<span class="badge badge-pendiente">⏳ Pendiente</span>';
+}
+
+function badgeAlerta(dias) {
+  const nivel = nivelAlerta(dias);
+  if (!nivel) return '';
+  const map = {
+    critica:     ['badge-critica',   `🚨 ${dias}d`],
+    advertencia: ['badge-pendiente', `⚠️ ${dias}d`],
+    vencida:     ['badge-vencida',   '⛔ Vencida'],
+  };
+  const [cls, txt] = map[nivel];
+  return `<span class="badge ${cls}">${txt}</span>`;
+}
+
+// ── API calls ─────────────────────────────────────────────────────────────────
+async function apiFetch(url, opts = {}) {
+  try {
+    const r = await fetch(API + url, {
+      headers: { 'Content-Type': 'application/json' },
+      ...opts,
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ error: r.statusText }));
+      throw new Error(err.error || r.statusText);
+    }
+    return await r.json();
+  } catch (e) {
+    console.error('API error:', url, e.message);
+    throw e;
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, tipo = 'info', dur = 4000) {
+  const el = document.createElement('div');
+  el.className = `toast ${tipo}`;
+  const icons = { ok: '✅', err: '❌', info: '💡' };
+  el.innerHTML = `<span>${icons[tipo] || '💡'}</span><span>${msg}</span>`;
+  $('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), dur);
+}
+
+// ── Navegación ────────────────────────────────────────────────────────────────
+function navTo(page, el) {
+  $$('.page').forEach(p => p.classList.remove('active'));
+  $$('.nav-item').forEach(n => n.classList.remove('active'));
+  $(`page-${page}`).classList.add('active');
+  if (el) el.classList.add('active');
+
+  if (page === 'licitaciones') renderTabla();
+  if (page === 'alertas')      cargarAlertas();
+  if (page === 'config')       cargarConfig();
+  if (page === 'dashboard')    cargarDashboard();
+}
+
+// ── Carga inicial ─────────────────────────────────────────────────────────────
+async function cargarTodo() {
+  try {
+    licitaciones = await apiFetch('/licitaciones');
+    $('last-update').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-AR');
+  } catch {
+    toast('No se pudo conectar al servidor. ¿Está corriendo server.py?', 'err', 8000);
+    licitaciones = [];
+  }
+
+  await cargarAlertasBanner();
+  cargarDashboard();
+  renderTabla();
+}
+
+// ── Banner y alertas ──────────────────────────────────────────────────────────
+async function cargarAlertasBanner() {
+  try {
+    alertas = await apiFetch('/alertas');
+  } catch {
+    alertas = licitaciones
+      .filter(l => l.estado === 'activa')
+      .map(l => {
+        const dias = diasRestantes(l.fecha_apertura);
+        const nivel = nivelAlerta(dias);
+        return nivel ? { ...l, dias_restantes: dias, nivel } : null;
+      })
+      .filter(Boolean);
+  }
+
+  // Badge sidebar
+  const cnt = alertas.filter(a => a.nivel !== 'vencida').length;
+  const badge = $('badge-alertas');
+  if (cnt > 0) {
+    badge.textContent = cnt;
+    badge.style.display = '';
+    badge.className = 'nav-badge' + (alertas.some(a => a.nivel === 'critica') ? '' : ' amarillo');
+  } else {
+    badge.style.display = 'none';
+  }
+
+  // Banner
+  const criticas = alertas.filter(a => a.nivel === 'critica');
+  const advertencias = alertas.filter(a => a.nivel === 'advertencia');
+  const bannerEl = $('banner-alertas');
+  bannerEl.innerHTML = '';
+  bannerEl.style.display = 'none';
+
+  if (criticas.length) {
+    const chips = criticas.map(a =>
+      `<span class="banner-chip" onclick="abrirModal('${a.id}')">${a.emoji || '🚨'} ${a.titulo?.substring(0,40) ?? a.id} (${a.dias_restantes}d)</span>`
+    ).join('');
+    bannerEl.innerHTML = `<div class="banner rojo"><strong>🚨 URGENTE:</strong><div class="banner-items">${chips}</div></div>`;
+    bannerEl.style.display = '';
+  } else if (advertencias.length) {
+    const chips = advertencias.map(a =>
+      `<span class="banner-chip" onclick="abrirModal('${a.id}')">${a.emoji || '⚠️'} ${a.titulo?.substring(0,40) ?? a.id} (${a.dias_restantes}d)</span>`
+    ).join('');
+    bannerEl.innerHTML = `<div class="banner amarillo"><strong>⚠️ Atención:</strong><div class="banner-items">${chips}</div></div>`;
+    bannerEl.style.display = '';
+  }
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+async function cargarDashboard() {
+  try {
+    const s = await apiFetch('/stats');
+    $('stat-total').textContent     = s.total;
+    $('stat-activas').textContent   = s.activas;
+    $('stat-cotizadas').textContent = s.con_cotizacion;
+    $('stat-sin-cot').textContent   = s.activas - s.con_cotizacion;
+    $('stat-urgentes').textContent  = s.urgentes_3d;
+    $('stat-semana').textContent    = s.alertas_7d;
+    $('dash-subtitle').textContent  = `Actualizado el ${new Date().toLocaleString('es-AR')}`;
+  } catch {
+    // Calcular desde datos locales
+    const activas = licitaciones.filter(l => l.estado === 'activa');
+    $('stat-total').textContent     = licitaciones.length;
+    $('stat-activas').textContent   = activas.length;
+    $('stat-cotizadas').textContent = licitaciones.filter(l => l.cotizacion).length;
+    $('stat-sin-cot').textContent   = activas.filter(l => !l.cotizacion).length;
+    $('stat-urgentes').textContent  = activas.filter(l => { const d = diasRestantes(l.fecha_apertura); return d !== null && d <= 3 && d > 0; }).length;
+    $('stat-semana').textContent    = activas.filter(l => { const d = diasRestantes(l.fecha_apertura); return d !== null && d > 3 && d <= 7; }).length;
+  }
+
+  // Tabla proximas
+  const proximas = licitaciones
+    .filter(l => l.estado === 'activa' && l.fecha_apertura)
+    .sort((a, b) => new Date(a.fecha_apertura) - new Date(b.fecha_apertura))
+    .slice(0, 8);
+
+  if (proximas.length === 0) {
+    $('tabla-proximas').innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><h3>Sin licitaciones próximas</h3><p>Ejecutá el scraper para cargar datos.</p></div>`;
+    return;
+  }
+
+  $('tabla-proximas').innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Organismo</th>
+        <th>Título</th>
+        <th>Apertura</th>
+        <th>Alerta</th>
+        <th>Estado cot.</th>
+      </tr></thead>
+      <tbody>
+        ${proximas.map(l => {
+          const dias = diasRestantes(l.fecha_apertura);
+          return `<tr onclick="abrirModal('${l.id}')">
+            <td><span class="td-org">${fmt(l.organismo)}</span></td>
+            <td class="td-title"><span>${l.titulo || l.id}</span></td>
+            <td class="td-fecha"><div class="fecha-val">${fmtFecha(l.fecha_apertura)}</div><div class="hora-val">${fmtHora(l.fecha_apertura)}</div></td>
+            <td>${badgeAlerta(dias)}</td>
+            <td>${badgeCotizacion(l)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+// ── Tabla licitaciones ────────────────────────────────────────────────────────
+let datosFiltrados = [];
+
+function renderTabla() {
+  filtrarTabla();
+
+  // Poblar filtro organismos
+  const orgs = [...new Set(licitaciones.map(l => l.organismo).filter(Boolean))];
+  const sel = $('filtro-organismo');
+  const actual = sel.value;
+  sel.innerHTML = '<option value="">Todos los organismos</option>' +
+    orgs.map(o => `<option value="${o}" ${o === actual ? 'selected' : ''}>${o}</option>`).join('');
+}
+
+function filtrarTabla() {
+  const txt = $('filtro-texto').value.toLowerCase();
+  const estado = $('filtro-estado').value;
+  const org = $('filtro-organismo').value;
+  const cot = $('filtro-cot').value;
+
+  datosFiltrados = licitaciones.filter(l => {
+    if (txt && !`${l.titulo} ${l.organismo} ${l.expediente}`.toLowerCase().includes(txt)) return false;
+    if (estado && l.estado !== estado) return false;
+    if (org && l.organismo !== org) return false;
+    if (cot === 'con' && !l.cotizacion) return false;
+    if (cot === 'sin' && l.cotizacion) return false;
+    return true;
+  });
+
+  // Sort
+  datosFiltrados.sort((a, b) => {
+    let va = a[sortConfig.key] ?? '';
+    let vb = b[sortConfig.key] ?? '';
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    return va < vb ? -sortConfig.dir : va > vb ? sortConfig.dir : 0;
+  });
+
+  $('licit-count').textContent = `${datosFiltrados.length} de ${licitaciones.length} licitaciones`;
+  renderFilas(datosFiltrados);
+}
+
+function sortTabla(key) {
+  if (sortConfig.key === key) sortConfig.dir *= -1;
+  else sortConfig = { key, dir: 1 };
+  $$('thead th.sorted').forEach(th => th.classList.remove('sorted'));
+  filtrarTabla();
+}
+
+function renderFilas(data) {
+  const tbody = $('tbody-licitaciones');
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <h3>Sin resultados</h3>
+      <p>Probá otros filtros o ejecutá el scraper.</p>
+    </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map(l => {
+    const dias = diasRestantes(l.fecha_apertura);
+    const estadoBadge = l.estado === 'activa'
+      ? '<span class="badge badge-activa">● Activa</span>'
+      : '<span class="badge badge-vencida">● Vencida</span>';
+
+    return `<tr onclick="abrirModal('${l.id}')">
+      <td>
+        <div style="font-weight:500;">${fmt(l.organismo)}</div>
+        ${estadoBadge}
+      </td>
+      <td class="td-title">
+        <span>${l.titulo || l.id}</span>
+        ${l.expediente ? `<div style="font-size:11px;color:var(--text3);margin-top:2px;">${l.expediente}</div>` : ''}
+      </td>
+      <td class="td-fecha">
+        <div class="fecha-val">${fmtFecha(l.fecha_apertura)}</div>
+        <div class="hora-val">${fmtHora(l.fecha_apertura)}</div>
+      </td>
+      <td>
+        ${l.items && l.items.length
+          ? `<span style="color:var(--verde);font-weight:600;">${l.items.length}</span>`
+          : '<span style="color:var(--text3);">—</span>'}
+      </td>
+      <td>${badgeCotizacion(l)}</td>
+      <td>${badgeAlerta(dias)}</td>
+      <td onclick="event.stopPropagation()" style="white-space:nowrap;">
+        <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-sm btn-icon" title="Ver detalle" onclick="abrirModal('${l.id}')">👁</button>
+          ${l.cotizacion?.excel
+            ? `<button class="btn btn-sm btn-icon" title="Descargar Excel" onclick="descargar('${l.id}')">📥</button>`
+            : ''}
+          <button class="btn btn-sm btn-icon" title="Cotizar" onclick="cotizarModal('${l.id}')">💰</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Modal ──────────────────────────────────────────────────────────────────────
+async function abrirModal(id) {
+  const lic = licitaciones.find(l => l.id === id);
+  if (!lic) return;
+  licitacionActual = lic;
+
+  $('modal-titulo').textContent = lic.titulo || lic.id;
+  $('modal-meta').textContent = `${lic.organismo || ''}  •  ${lic.expediente || ''}  •  ${fmtFecha(lic.fecha_apertura)} ${fmtHora(lic.fecha_apertura)}`;
+
+  // Info grid
+  const dias = diasRestantes(lic.fecha_apertura);
+  const infoRows = [
+    ['Organismo', lic.organismo],
+    ['Expediente', lic.expediente || '—'],
+    ['Fecha apertura', `${fmtFecha(lic.fecha_apertura)} ${fmtHora(lic.fecha_apertura)}`],
+    ['Días restantes', dias !== null ? (dias <= 0 ? 'Vencida' : `${dias} días`) : '—'],
+    ['Estado', lic.estado === 'activa' ? '✅ Activa' : '⛔ Vencida'],
+    ['Pliego', lic.pliego_url ? `<a href="${lic.pliego_url}" target="_blank" style="color:var(--dorado);">Ver PDF ↗</a>` : '—'],
+  ];
+
+  $('modal-info-grid').innerHTML = infoRows.map(([k, v]) =>
+    `<div class="info-row"><div class="key">${k}</div><div class="val">${v}</div></div>`
+  ).join('');
+
+  // Tab ítems
+  renderModalItems(lic);
+  // Tab cotización
+  renderModalCotizacion(lic);
+
+  // Footer botones
+  $('modal-footer').innerHTML = `
+    <button class="btn btn-sm" onclick="cerrarModal()">Cerrar</button>
+    ${lic.pliego_pdf_local
+      ? `<a class="btn btn-sm" href="${API}/static/${lic.pliego_pdf_local}" target="_blank">📄 Ver pliego</a>`
+      : ''}
+    ${!lic.items?.length
+      ? `<button class="btn btn-sm" onclick="extraerItems('${lic.id}')">🔍 Extraer ítems</button>`
+      : ''}
+    <button class="btn btn-sm btn-primary" onclick="cotizarModal('${lic.id}')">💰 Cotizar</button>
+    ${lic.cotizacion?.excel
+      ? `<button class="btn btn-sm" onclick="descargar('${lic.id}')">📥 Descargar Excel</button>`
+      : ''}
+  `;
+
+  // Activar tab 1
+  switchTab('items', $$('.tab')[0]);
+  $('modal-backdrop').classList.add('open');
+}
+
+function renderModalItems(lic) {
+  const container = $('items-content');
+  const items = lic.items || [];
+
+  if (!items.length) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📦</div>
+      <h3>Sin ítems extraídos</h3>
+      <p>Descargá el pliego y ejecutá <code>python extraer_items.py</code><br/>o usá el botón "Extraer ítems".</p>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span style="font-size:13px;color:var(--text3);">${items.length} ítem${items.length !== 1 ? 's' : ''}</span>
+    </div>
+    <div class="items-table-wrap">
+      <table class="items-table">
+        <thead><tr>
+          <th>N°</th>
+          <th>Descripción</th>
+          <th>Cant.</th>
+          <th>Unidad</th>
+          <th>Precio ref. (sin IVA)</th>
+          <th>Fuente</th>
+        </tr></thead>
+        <tbody>
+          ${items.map((it, i) => `
+            <tr>
+              <td style="color:var(--text3);">${it.numero || i+1}</td>
+              <td>${it.descripcion}</td>
+              <td style="text-align:right;">${it.cantidad ?? '—'}</td>
+              <td style="color:var(--text3);">${it.unidad || '—'}</td>
+              <td style="text-align:right;" class="${it.precio_referencia ? 'precio-ok' : 'precio-null'}">
+                ${it.precio_referencia ? fmtMoney(it.precio_referencia) : 'Sin cotizar'}
+              </td>
+              <td style="font-size:11px;color:var(--text3);">${it.fuente_precio || '—'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderModalCotizacion(lic) {
+  const container = $('cotizacion-content');
+  const cot = lic.cotizacion;
+
+  if (!cot) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">💰</div>
+      <h3>Sin cotización generada</h3>
+      <p>Primero extraé los ítems y luego presioná "Cotizar".</p>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="info-grid">
+      <div class="info-row"><div class="key">Fecha cotización</div><div class="val">${new Date(cot.fecha).toLocaleString('es-AR')}</div></div>
+      <div class="info-row"><div class="key">Margen aplicado</div><div class="val">${cot.margen}%</div></div>
+      <div class="info-row"><div class="key">Ítems cotizados</div><div class="val" style="color:var(--verde);">${cot.items_cotizados}</div></div>
+      <div class="info-row"><div class="key">Sin precio</div><div class="val" style="color:${cot.items_sin_precio ? 'var(--amarillo)' : 'var(--text3)'};">${cot.items_sin_precio}</div></div>
+    </div>
+    ${cot.excel ? `
+    <div style="background:var(--bg4);border:1px solid var(--border);border-radius:var(--radio);padding:14px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-weight:600;">📊 Excel listo</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px;">${cot.excel}</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="descargar('${lic.id}')">📥 Descargar</button>
+    </div>` : ''}
+    <div style="margin-top:12px;">
+      <label class="form-label" style="display:block;margin-bottom:6px;">Recotizar con margen personalizado:</label>
+      <div style="display:flex;gap:8px;">
+        <input class="form-input" type="number" id="margen-input" value="${cot.margen}" min="0" max="100" style="width:100px;" />
+        <button class="btn btn-primary btn-sm" onclick="cotizarConMargen('${lic.id}')">Actualizar cotización</button>
+      </div>
+    </div>`;
+}
+
+function cerrarModal(e) {
+  if (e && e.target !== $('modal-backdrop')) return;
+  $('modal-backdrop').classList.remove('open');
+  licitacionActual = null;
+}
+
+function switchTab(tab, el) {
+  $$('.tab').forEach(t => t.classList.remove('active'));
+  $$('.tab-content').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  $(`tab-${tab}`).classList.add('active');
+}
+
+// ── Acciones ──────────────────────────────────────────────────────────────────
+async function cotizarModal(id) {
+  const lic = licitaciones.find(l => l.id === id);
+  if (!lic) return;
+  if (!lic.items?.length) {
+    toast('Esta licitación no tiene ítems. Extraélos primero.', 'err');
+    return;
+  }
+  await ejecutarCotizacion(id, null);
+}
+
+async function cotizarConMargen(id) {
+  const margen = parseFloat($('margen-input').value);
+  if (isNaN(margen) || margen < 0) { toast('Margen inválido', 'err'); return; }
+  await ejecutarCotizacion(id, margen, true);
+}
+
+async function ejecutarCotizacion(id, margen, force = false) {
+  toast('Buscando precios… esto puede tardar 1-2 minutos ☕', 'info', 15000);
+  try {
+    const body = { force };
+    if (margen !== null) body.margen = margen;
+    const res = await apiFetch(`/cotizar/${id}`, { method: 'POST', body: JSON.stringify(body) });
+    // Actualizar en lista local
+    const idx = licitaciones.findIndex(l => l.id === id);
+    if (idx >= 0 && res.licitacion) licitaciones[idx] = res.licitacion;
+    licitacionActual = licitaciones[idx] || licitacionActual;
+    renderModalCotizacion(licitacionActual);
+    renderModalItems(licitacionActual);
+    renderFilas(datosFiltrados);
+    toast('✅ Cotización generada correctamente', 'ok');
+  } catch (e) {
+    toast('Error cotizando: ' + e.message, 'err');
+  }
+}
+
+async function extraerItems(id) {
+  toast('Extrayendo ítems del PDF…', 'info');
+  try {
+    const res = await apiFetch(`/extraer/${id}`, { method: 'POST' });
+    const idx = licitaciones.findIndex(l => l.id === id);
+    if (idx >= 0 && res.licitacion) licitaciones[idx] = res.licitacion;
+    licitacionActual = licitaciones[idx] || licitacionActual;
+    renderModalItems(licitacionActual);
+    $('modal-footer').querySelector('[onclick*="extraerItems"]')?.remove();
+    toast(`✅ ${res.items_encontrados} ítems extraídos`, 'ok');
+  } catch (e) {
+    toast('Error extrayendo ítems: ' + e.message, 'err');
+  }
+}
+
+async function descargar(id) {
+  window.open(`${API}/descargar/${id}`, '_blank');
+}
+
+async function scrapeManual() {
+  const btn = $('btn-scrape');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Scrapeando…'; }
+  toast('Iniciando scraper en segundo plano…', 'info');
+  try {
+    await apiFetch('/scrape', { method: 'POST' });
+    toast('Scraper iniciado. Los datos se actualizarán en 1-2 min.', 'ok');
+    setTimeout(async () => {
+      licitaciones = await apiFetch('/licitaciones').catch(() => licitaciones);
+      renderTabla();
+      cargarDashboard();
+      cargarAlertasBanner();
+    }, 30000);
+  } catch (e) {
+    toast('Error iniciando scraper: ' + e.message, 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span>🔄</span> Actualizar datos'; }
+  }
+}
+
+// ── Alertas page ──────────────────────────────────────────────────────────────
+async function cargarAlertas() {
+  $('alertas-container').innerHTML = `<div class="empty-state"><div class="spinner"></div></div>`;
+  try {
+    alertas = await apiFetch('/alertas');
+  } catch {
+    alertas = licitaciones
+      .filter(l => l.estado === 'activa')
+      .map(l => {
+        const dias = diasRestantes(l.fecha_apertura);
+        const nivel = nivelAlerta(dias);
+        if (!nivel) return null;
+        return { ...l, dias_restantes: dias, nivel, emoji: nivel === 'critica' ? '🚨' : nivel === 'advertencia' ? '⚠️' : '⛔' };
+      }).filter(Boolean);
+  }
+
+  const container = $('alertas-container');
+  if (!alertas.length) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">✅</div>
+      <h3>Sin alertas activas</h3>
+      <p>Todas las licitaciones tienen vencimiento en más de 7 días.</p>
+    </div>`;
+    return;
+  }
+
+  const grupos = [
+    { nivel: 'critica',     titulo: '🚨 Críticas — 3 días o menos', items: alertas.filter(a => a.nivel === 'critica') },
+    { nivel: 'advertencia', titulo: '⚠️ Advertencias — Menos de 1 semana', items: alertas.filter(a => a.nivel === 'advertencia') },
+    { nivel: 'vencida',     titulo: '⛔ Vencidas hoy', items: alertas.filter(a => a.nivel === 'vencida') },
+  ];
+
+  container.innerHTML = grupos
+    .filter(g => g.items.length > 0)
+    .map(g => `
+      <h3 style="font-size:14px;font-weight:600;color:var(--text2);margin:16px 0 8px;">${g.titulo}</h3>
+      ${g.items.map(a => `
+        <div class="alert-card ${a.nivel}" onclick="abrirModal('${a.id}')">
+          <span class="alert-emoji">${a.emoji || '!'}</span>
+          <div class="alert-info">
+            <div class="alert-titulo">${a.titulo || a.id}</div>
+            <div class="alert-meta">${a.organismo || ''} • ${fmtFecha(a.fecha_apertura)} ${fmtHora(a.fecha_apertura)}</div>
+            ${a.cotizacion_lista === false ? '<span class="badge badge-pendiente" style="margin-top:4px;">❌ Sin cotización</span>' : ''}
+          </div>
+          <div class="alert-dias ${a.nivel}">${a.dias_restantes > 0 ? a.dias_restantes + 'd' : '¡HOY!'}</div>
+        </div>
+      `).join('')}
+    `).join('');
+}
+
+// ── Config ────────────────────────────────────────────────────────────────────
+async function cargarConfig() {
+  try {
+    const cfg = await apiFetch('/config');
+    $('cfg-empresa').value = cfg.empresa || '';
+    $('cfg-cuit').value    = cfg.cuit || '';
+    $('cfg-margen').value  = cfg.margen_default ?? 25;
+    $('cfg-iva').value     = cfg.iva ?? 21;
+    $('cfg-email').value   = cfg.email_alertas || '';
+    $('cfg-smtp-gmail').value = cfg.smtp_gmail || '';
+    $('cfg-google-key').value = cfg.google_api_key || '';
+    $('cfg-google-cse').value = cfg.google_cse_id || '';
+  } catch (e) {
+    toast('No se pudo cargar configuración: ' + e.message, 'err');
+  }
+}
+
+async function guardarConfig() {
+  const cfg = {
+    empresa:       $('cfg-empresa').value.trim(),
+    cuit:          $('cfg-cuit').value.trim(),
+    margen_default: parseFloat($('cfg-margen').value) || 25,
+    iva:           parseFloat($('cfg-iva').value) || 21,
+    email_alertas: $('cfg-email').value.trim(),
+    smtp_gmail:    $('cfg-smtp-gmail').value.trim(),
+    google_api_key: $('cfg-google-key').value.trim(),
+    google_cse_id:  $('cfg-google-cse').value.trim(),
+  };
+  const pass = $('cfg-smtp-pass').value;
+  if (pass) cfg.smtp_password = pass;
+
+  try {
+    await apiFetch('/config', { method: 'POST', body: JSON.stringify(cfg) });
+    toast('✅ Configuración guardada', 'ok');
+  } catch (e) {
+    toast('Error guardando config: ' + e.message, 'err');
+  }
+}
+
+// ── Teclado ───────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') cerrarModal();
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', cargarTodo);
+</script>
+</body>
+</html>

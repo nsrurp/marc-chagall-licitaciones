@@ -1,0 +1,18 @@
+{
+  "margen_default": 25,
+  "iva": 21,
+  "empresa": "Marc Chagall Laboratorio Fotográfico",
+  "cuit": "",
+  "email_alertas": "tu@email.com",
+  "smtp_gmail": "tu@gmail.com",
+  "smtp_password": "xxxx xxxx xxxx xxxx",
+  "smtp_port": 587,
+  "fuentes_scraping": [
+    "https://www.unsa.edu.ar/licitaciones-y-compras-dgoys/",
+    "https://www.unsa.edu.ar/licitaciones-y-compras/"
+  ],
+  "delay_entre_requests": 1.5,
+  "mercadolibre_busqueda_url": "https://listado.mercadolibre.com.ar/{query}",
+  "google_api_key": "",
+  "google_cse_id": ""
+}
