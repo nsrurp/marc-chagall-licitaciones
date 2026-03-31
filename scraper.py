@@ -453,6 +453,147 @@ def scrape_salta_compra() -> list[dict]:
     return resultados
 
 
+# ── SCRAPER 4 — Municipalidad de Salta ───────────────────────────────────────
+
+def scrape_municipalidad_salta() -> list[dict]:
+    BASE_URL = "https://municipalidadsalta.gob.ar/contrataciones/"
+    CATEGORIAS = [
+        BASE_URL,
+        "https://municipalidadsalta.gob.ar/oficina-contrataciones/obras-publicas-licitaciones/",
+        "https://municipalidadsalta.gob.ar/oficina-contrataciones/hacienda-licitaciones/",
+        "https://municipalidadsalta.gob.ar/oficina-contrataciones/servicios-publicos-licitacion/",
+    ]
+    log.info("Scrapeando Municipalidad de Salta: %s", BASE_URL)
+
+    if not robots_allowed(BASE_URL):
+        log.warning("robots.txt no permite scrapear %s", BASE_URL)
+        return []
+
+    resultados = []
+    seen = set()
+
+    for cat_url in CATEGORIAS:
+        # Paginar hasta 5 páginas por categoría
+        for pagina in range(1, 6):
+            url = cat_url if pagina == 1 else f"{cat_url}page/{pagina}/"
+            resp = get(url)
+            if not resp:
+                break
+
+            soup = BeautifulSoup(resp.text, "lxml")
+
+            # Artículos de licitación — WordPress con Elementor
+            articulos = (
+                soup.select(".void-post-grid article")
+                or soup.select("article.post")
+                or soup.select(".post-grid-item")
+                or soup.select("main article")
+            )
+
+            if not articulos:
+                break  # Sin más resultados en esta categoría
+
+            hay_nuevos = False
+            for articulo in articulos:
+                try:
+                    # Título
+                    titulo_tag = articulo.find(["h2", "h3", "h4"], class_=re.compile(r"entry-title|post-title", re.I))
+                    if not titulo_tag:
+                        titulo_tag = articulo.find(["h2", "h3", "h4"])
+                    if not titulo_tag:
+                        continue
+                    titulo = limpiar(titulo_tag.get_text())
+                    if not titulo or len(titulo) < 5:
+                        continue
+
+                    # Link a la página de detalle
+                    link_tag = titulo_tag.find("a") or articulo.find("a", href=re.compile(r"municipalidadsalta"))
+                    detalle_url = link_tag["href"] if link_tag else None
+
+                    # Expediente desde el título
+                    exp_match = re.search(
+                        r"(licitaci[oó]n\s+(?:p[uú]blica\s+)?n[°º]?\s*[\d/\-]+|"
+                        r"exp(?:ediente)?\.?\s*n[°º]?\s*[\w/\-]+|"
+                        r"n[°º]\s*[\d]+[/-]\d{2,4})",
+                        titulo, re.I
+                    )
+                    expediente = exp_match.group(0) if exp_match else ""
+
+                    # Fecha desde el meta o texto
+                    texto = articulo.get_text(" ", strip=True)
+                    fecha_str = None
+                    for pat in [
+                        r"(\d{1,2}[/-]\d{1,2}[/-]\d{4}\s*\d{2}:\d{2})",
+                        r"(\d{1,2}[/-]\d{1,2}[/-]\d{4})",
+                        r"(\d{1,2}\s+de\s+\w+\s+de\s+\d{4})",
+                    ]:
+                        m = re.search(pat, texto, re.I)
+                        if m:
+                            fecha_str = parse_fecha(m.group(1))
+                            if fecha_str:
+                                break
+
+                    # Si hay URL de detalle, buscar PDF ahí
+                    pliego_url = None
+                    if detalle_url:
+                        resp_det = get(detalle_url)
+                        if resp_det:
+                            soup_det = BeautifulSoup(resp_det.text, "lxml")
+                            pdf_tag = soup_det.find("a", href=re.compile(r"\.pdf", re.I))
+                            if pdf_tag:
+                                pliego_url = urljoin(detalle_url, pdf_tag["href"])
+                            # Intentar extraer fecha de la página de detalle si no la tenemos
+                            if not fecha_str:
+                                texto_det = soup_det.get_text(" ", strip=True)
+                                for pat in [
+                                    r"apertura[:\s]+([^|\n<]{5,30})",
+                                    r"(\d{1,2}[/-]\d{1,2}[/-]\d{4}\s*\d{2}:\d{2})",
+                                    r"(\d{1,2}[/-]\d{1,2}[/-]\d{4})",
+                                ]:
+                                    m = re.search(pat, texto_det, re.I)
+                                    if m:
+                                        fecha_str = parse_fecha(m.group(1))
+                                        if fecha_str:
+                                            break
+
+                    uid = make_id("municipalidad-salta", titulo)
+                    if uid in seen:
+                        continue
+                    seen.add(uid)
+                    hay_nuevos = True
+
+                    pdf_local = None
+                    if pliego_url:
+                        pdf_local = download_pdf(pliego_url, uid)
+
+                    resultados.append({
+                        "id": uid,
+                        "organismo": "Municipalidad de Salta",
+                        "titulo": titulo,
+                        "expediente": expediente,
+                        "fecha_apertura": fecha_str,
+                        "pliego_url": pliego_url or detalle_url,
+                        "pliego_pdf_local": pdf_local,
+                        "estado": "activa",
+                        "items": [],
+                        "cotizacion": None,
+                    })
+
+                except Exception as e:
+                    log.error("Error procesando artículo Municipalidad: %s", e)
+
+            if not hay_nuevos:
+                break  # No hay licitaciones nuevas en esta página
+
+    log.info("Municipalidad de Salta: %d licitaciones encontradas", len(resultados))
+    return resultados
+
+
+def limpiar(texto: str) -> str:
+    """Limpia texto de espacios y saltos de línea."""
+    return re.sub(r"\s+", " ", texto or "").strip()
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
@@ -462,7 +603,7 @@ def main():
 
     nuevas: list[dict] = []
 
-    for scraper_fn in [scrape_unsa_dgoys, scrape_unsa_rectorado, scrape_salta_compra]:
+    for scraper_fn in [scrape_unsa_dgoys, scrape_unsa_rectorado, scrape_salta_compra, scrape_municipalidad_salta]:
         try:
             resultados = scraper_fn()
             nuevas.extend(resultados)
