@@ -145,7 +145,7 @@ def imprimir_resumen(alertas: list[dict], total_activas: int, total_con_cot: int
     print(Fore.YELLOW + "=" * 65)
 
     if not alertas:
-        print(Fore.GREEN + "\n  ✅ Sin alertas urgentes. Todo en orden.")
+        print(Fore.GREEN + "\n  [OK] Sin alertas urgentes. Todo en orden.")
         return
 
     # Agrupar por nivel
@@ -254,7 +254,7 @@ def enviar_email(alertas: list[dict], config: dict) -> bool:
         return True
     except Exception as e:
         log.error("Error enviando email: %s", e)
-        print(Fore.RED + f"  ❌ Error enviando email: {e}")
+        print(Fore.RED + f"  [ERROR] Error enviando email: {e}")
         return False
 
 

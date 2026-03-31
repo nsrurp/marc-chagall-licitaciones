@@ -187,6 +187,97 @@ _ITEM_PATTERNS = [
     ),
 ]
 
+# Patrones para documentos de contratación directa / texto libre
+_PROSE_PATTERNS = [
+    # "Objeto de la Contratación: Compra de 2 (dos) armarios metálicos..."
+    re.compile(
+        r"objeto\s+de\s+la\s+contrataci[oó]n\s*:\s*(.+?)(?:\.|$)",
+        re.I | re.S,
+    ),
+    # "Compra de 2 (dos) armarios metálicos..."
+    re.compile(
+        r"compra\s+de\s+(\d+)\s+\([^)]+\)\s+(.+?)(?:\.|para|cuyo|en el)",
+        re.I,
+    ),
+    # "Adquisición de 10 (diez) resmas de papel..."
+    re.compile(
+        r"adquisici[oó]n\s+de\s+(\d+)\s+\([^)]+\)\s+(.+?)(?:\.|para|cuyo)",
+        re.I,
+    ),
+    # "Contratación del servicio de..."
+    re.compile(
+        r"contrataci[oó]n\s+del?\s+(.+?)(?:\.|para|cuyo|$)",
+        re.I,
+    ),
+]
+
+
+def _numero_escrito_a_digito(texto: str) -> float | None:
+    """Extrae número inicial de un texto como '2 (dos) armarios' → 2.0"""
+    m = re.match(r"(\d+)", texto.strip())
+    return float(m.group(1)) if m else None
+
+
+def extraer_items_prosa(pdf_path: Path) -> list[dict]:
+    """Extrae ítems de documentos de contratación directa con texto libre."""
+    items = []
+    try:
+        with pdfplumber.open(pdf_path) as pdf:
+            texto = "\n".join(p.extract_text() or "" for p in pdf.pages)
+
+        # Patrón 1: "Objeto de la Contratación: ..."
+        m = re.search(
+            r"[Oo]bjeto\s+de\s+la\s+[Cc]ontrataci[oó]n\s*:\s*(.+?)(?:\n[A-Z]|Fecha|IMPORTANTE|$)",
+            texto, re.S
+        )
+        if m:
+            desc_completa = limpiar(m.group(1))
+            # Intentar extraer cantidad del inicio: "Compra de 2 (dos) X"
+            cant_m = re.search(r"de\s+(\d+)\s+\([^)]+\)", desc_completa, re.I)
+            cantidad = float(cant_m.group(1)) if cant_m else 1.0
+
+            # Limpiar descripción quitando "Compra de N (N) "
+            desc_limpia = re.sub(r"^(compra|adquisici[oó]n|contrataci[oó]n)\s+de\s+\d+\s+\([^)]+\)\s*", "", desc_completa, flags=re.I)
+            if not desc_limpia:
+                desc_limpia = desc_completa
+
+            items.append({
+                "numero": "1",
+                "descripcion": desc_limpia.strip(". "),
+                "cantidad": cantidad,
+                "unidad": "unidad",
+                "precio_referencia": None,
+                "fuente_precio": None,
+            })
+            return items
+
+        # Patrón 2: "Compra/Adquisición de N (N) descripción"
+        for pat in _PROSE_PATTERNS[1:3]:
+            for match in pat.finditer(texto):
+                grupos = match.groups()
+                if len(grupos) == 2:
+                    cantidad = float(grupos[0])
+                    descripcion = limpiar(grupos[1])
+                elif len(grupos) == 1:
+                    descripcion = limpiar(grupos[0])
+                    cantidad = 1.0
+                else:
+                    continue
+                if descripcion and len(descripcion) > 5:
+                    items.append({
+                        "numero": str(len(items) + 1),
+                        "descripcion": descripcion,
+                        "cantidad": cantidad,
+                        "unidad": "unidad",
+                        "precio_referencia": None,
+                        "fuente_precio": None,
+                    })
+
+    except Exception as e:
+        log.error("Error en extracción por prosa: %s", e)
+
+    return items
+
 
 def extraer_items_texto(pdf_path: Path) -> list[dict]:
     """Fallback: extrae ítems mediante patrones regex en texto plano."""
@@ -242,14 +333,19 @@ def procesar_licitacion(lic: dict) -> dict:
 
     log.info("[%s] Procesando PDF: %s", lic["id"], pdf_path.name)
 
-    # Intentar tabla primero, texto como fallback
+    # Intentar tabla primero, luego texto estructurado, luego prosa
     items = extraer_items_tabla(pdf_path)
     metodo = "tabla"
 
     if not items:
-        log.info("[%s] Sin tablas detectadas, probando extracción por texto", lic["id"])
+        log.info("[%s] Sin tablas, probando extracción por texto estructurado", lic["id"])
         items = extraer_items_texto(pdf_path)
         metodo = "texto"
+
+    if not items:
+        log.info("[%s] Sin texto estructurado, probando extracción por prosa", lic["id"])
+        items = extraer_items_prosa(pdf_path)
+        metodo = "prosa"
 
     if items:
         log.info("[%s] %d ítems extraídos (método: %s)", lic["id"], len(items), metodo)
@@ -281,7 +377,7 @@ def main():
             procesadas += 1
 
     save_licitaciones(licitaciones)
-    print(f"\n✅ Extracción completada. {procesadas} licitaciones con ítems nuevos.")
+    print(f"\n[OK] Extraccion completada. {procesadas} licitaciones con items nuevos.")
 
 
 if __name__ == "__main__":

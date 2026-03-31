@@ -563,11 +563,11 @@ def cotizar_licitacion(lic_id: str, margen: float, force: bool = False) -> Path 
             break
     save_licitaciones(licitaciones)
 
-    print(f"\n✅ Cotización completada para '{lic.get('titulo', lic_id)}'")
+    print(f"\n[OK] Cotizacion completada para '{lic.get('titulo', lic_id)}'")
     print(f"   Excel: {ruta_excel}")
     sin_precio = [i for i in items_cotizados if not i.get("precio_referencia")]
     if sin_precio:
-        print(f"   ⚠️  {len(sin_precio)} ítems sin precio (requieren cotización manual):")
+        print(f"   [!]  {len(sin_precio)} ítems sin precio (requieren cotización manual):")
         for sp in sin_precio:
             print(f"      - {sp['descripcion'][:70]}")
 

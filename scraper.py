@@ -140,6 +140,8 @@ def parse_fecha(texto: str) -> str | None:
     if not texto:
         return None
     texto = texto.strip().lower()
+    # Normalizar año con punto: "2.026" → "2026"
+    texto = re.sub(r"\b(2\.0\d{2})\b", lambda x: x.group(1).replace(".", ""), texto)
 
     # DD/MM/YYYY HH:MM o DD-MM-YYYY HH:MM
     m = re.search(r"(\d{1,2})[/-](\d{1,2})[/-](\d{4})\s*(\d{2}:\d{2})?", texto)
@@ -472,7 +474,7 @@ def main():
     save_licitaciones(combinadas)
 
     log.info("Scraping finalizado. Total licitaciones: %d", len(combinadas))
-    print(f"\n✅ Scraping completado. {len(nuevas)} licitaciones encontradas. "
+    print(f"\n[OK] Scraping completado. {len(nuevas)} licitaciones encontradas. "
           f"Total en archivo: {len(combinadas)}")
 
 
