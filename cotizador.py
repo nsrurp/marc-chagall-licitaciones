@@ -74,6 +74,13 @@ HEADERS = {
 SESSION = requests.Session()
 SESSION.headers.update(HEADERS)
 
+# Sesión específica para APIs JSON (sin User-Agent de browser)
+SESSION_API = requests.Session()
+SESSION_API.headers.update({
+    "Accept": "application/json",
+    "User-Agent": "marc-chagall-licitaciones/1.0",
+})
+
 
 def get(url: str, timeout: int = 15) -> requests.Response | None:
     try:
@@ -86,52 +93,227 @@ def get(url: str, timeout: int = 15) -> requests.Response | None:
         return None
 
 
+def get_api(url: str, timeout: int = 15) -> requests.Response | None:
+    """GET para endpoints JSON — usa headers de API, no de browser."""
+    try:
+        r = SESSION_API.get(url, timeout=timeout)
+        r.raise_for_status()
+        time.sleep(0.5)
+        return r
+    except requests.RequestException as e:
+        log.warning("GET API %s → %s", url, e)
+        return None
+
+
 # ── Búsqueda de precios ───────────────────────────────────────────────────────
 
-def buscar_mercadolibre(descripcion: str) -> tuple[float | None, str | None]:
+# Palabras a eliminar al limpiar la query
+_STOPWORDS = {
+    "de", "del", "la", "el", "los", "las", "un", "una", "unos", "unas",
+    "en", "con", "y", "o", "a", "al", "para", "por", "que", "se", "su",
+    "sus", "lo", "le", "les", "no", "si", "como", "mas", "pero", "sin",
+    "sobre", "entre", "hasta", "desde", "durante", "mediante",
+}
+
+def limpiar_query(descripcion: str) -> str:
     """
-    Busca el precio más barato de un ítem en MercadoLibre Argentina.
+    Extrae keywords relevantes de una descripción larga para búsqueda.
+    Ej: 'Armario metálico para guarda de Resoluciones Rectorales 1972-1988'
+        → 'armario metálico'
+    Ej: 'Drone DJI Mini 4K - Peso <249g, 4K 3840x2160, Gimbal 3 ejes'
+        → 'Drone DJI Mini 4K'
+    """
+    desc = descripcion.strip()
+
+    # Cortar en guión, coma o "–" cuando sigue especificaciones técnicas
+    desc = re.split(r"\s*[-–—]\s*(?=\w)", desc)[0]
+
+    # Cortar en coma cuando sigue especificación técnica (número + unidad)
+    partes = re.split(r",\s*", desc)
+    desc = partes[0] if partes else desc
+
+    # Quitar especificaciones entre paréntesis largas
+    desc = re.sub(r"\([^)]{15,}\)", "", desc)
+
+    # Cortar en "para [uso/destino]"
+    desc = re.sub(
+        r"\s+para\s+(la\s+|el\s+|los\s+|las\s+)?(guarda|gestión|gestion|"
+        r"funcionamiento|uso|control|acceso|archivo|almacenamiento|"
+        r"custodia|depósito|deposito|adquisicion|compra).+",
+        "", desc, flags=re.I
+    )
+
+    # Quitar números de expediente y rangos de años
+    desc = re.sub(r"\b\d{4}[-/]\d{4}\b", "", desc)
+    desc = re.sub(r"\b(exp\.?|expte\.?|n[°º]?\.?)\s*[\d/]+", "", desc, flags=re.I)
+
+    # Quitar unidades de medida técnicas sueltas que no aportan a la búsqueda
+    desc = re.sub(r"\b\d+[\.,]?\d*\s*(ghz|mhz|gb|tb|mb|mm|cm|kg|hz|fps|w\b)", "", desc, flags=re.I)
+
+    # Quitar caracteres especiales y símbolos
+    desc = re.sub(r"[<>\"#%&*+=|{}\\°º:;]", " ", desc)
+    desc = re.sub(r"\s+", " ", desc).strip()
+
+    # Tomar las primeras 4-5 palabras significativas
+    palabras = desc.split()
+    keywords = [p for p in palabras if p.lower() not in _STOPWORDS and len(p) > 2 and not re.match(r"^\d+$", p)][:5]
+
+    resultado = " ".join(keywords)
+    if resultado.lower() != descripcion[:len(resultado)].lower():
+        log.info("  Query: '%s' → '%s'", descripcion[:55], resultado)
+    return resultado
+
+
+def buscar_mercadolibre_html(descripcion: str) -> tuple[float | None, str | None]:
+    """
+    Busca precios en MercadoLibre Argentina scrapeando el HTML de búsqueda.
+    ML renderiza la página en el servidor (SSR) e incluye los datos de productos
+    en un JSON embebido dentro de un <script> tag.
     Devuelve (precio_sin_iva, url_producto).
     """
-    query = urllib.parse.quote(descripcion)
-    url = f"https://listado.mercadolibre.com.ar/{query}"
-    log.info("  ML: buscando '%s'", descripcion[:60])
+    query = limpiar_query(descripcion)
+    if not query:
+        return None, None
+
+    url = f"https://listado.mercadolibre.com.ar/{urllib.parse.quote(query)}"
+    log.info("  ML HTML: buscando '%s'", query)
 
     resp = get(url)
     if not resp:
         return None, None
 
-    soup = BeautifulSoup(resp.text, "lxml")
+    try:
+        soup = BeautifulSoup(resp.text, "lxml")
 
-    # Selectores de MercadoLibre Argentina (pueden cambiar con rediseños)
-    precios = []
-    selectors = [
-        "span.andes-money-amount__fraction",
-        "span.price-tag-fraction",
-        "[class*='price__fraction']",
-        "[class*='money-amount__fraction']",
-    ]
-    for sel in selectors:
-        tags = soup.select(sel)
-        if tags:
-            for tag in tags[:10]:
-                raw = tag.get_text(strip=True).replace(".", "").replace(",", "")
+        # Método 1: JSON en <script type="application/ld+json">
+        precios = []
+        urls_prod = []
+        for script in soup.find_all("script", type="application/ld+json"):
+            try:
+                data = json.loads(script.string or "")
+                # ItemList con offers
+                items = data.get("itemListElement", []) or [data]
+                for item in items:
+                    offer = item.get("offers", {}) or item.get("offer", {})
+                    if isinstance(offer, list):
+                        offer = offer[0] if offer else {}
+                    precio = offer.get("price") or offer.get("lowPrice")
+                    if precio:
+                        p = float(str(precio).replace(",", "."))
+                        if p > 100:
+                            precios.append(p)
+                            urls_prod.append(item.get("url", url))
+            except Exception:
+                pass
+
+        # Método 2: data-price en elementos HTML
+        if not precios:
+            for el in soup.select("[data-price]"):
                 try:
-                    precios.append(float(raw))
-                except ValueError:
+                    p = float(el["data-price"])
+                    if p > 100:
+                        precios.append(p)
+                except (ValueError, KeyError):
                     pass
-            break
 
-    if not precios:
-        log.warning("  ML: sin precios para '%s'", descripcion[:60])
+        # Método 3: texto de precios en spans conocidos
+        if not precios:
+            for sel in [
+                "span.andes-money-amount__fraction",
+                "span.price-tag-fraction",
+                "[class*='price__fraction']",
+            ]:
+                tags = soup.select(sel)
+                for tag in tags[:15]:
+                    raw = tag.get_text(strip=True).replace(".", "").replace(",", "")
+                    try:
+                        p = float(raw)
+                        if p > 100:
+                            precios.append(p)
+                    except ValueError:
+                        pass
+                if precios:
+                    break
+
+        if not precios:
+            log.warning("  ML HTML: sin precios para '%s'", query)
+            return None, None
+
+        precios.sort()
+        idx_p25 = max(0, len(precios) // 4)
+        precio_ref = precios[idx_p25]
+        precio_sin_iva = round(precio_ref / 1.21, 2)
+        prod_url = urls_prod[idx_p25] if idx_p25 < len(urls_prod) else url
+
+        log.info(
+            "  ML HTML: %d precios | P25=$%.0f (IVA incl.) → $%.0f (sin IVA)",
+            len(precios), precio_ref, precio_sin_iva
+        )
+        return precio_sin_iva, prod_url
+
+    except Exception as e:
+        log.error("  ML HTML: error: %s", e)
         return None, None
 
-    precio_min = min(precios)
-    # ML muestra precios con IVA incluido para consumidor final
-    # Para precio sin IVA dividimos por 1.21
-    precio_sin_iva = round(precio_min / 1.21, 2)
-    log.info("  ML: precio mín encontrado $%.2f (con IVA) → $%.2f (sin IVA)", precio_min, precio_sin_iva)
-    return precio_sin_iva, url
+
+def buscar_duckduckgo(descripcion: str) -> tuple[float | None, str | None]:
+    """
+    Busca precio vía DuckDuckGo HTML (sin API key).
+    Extrae precios en pesos argentinos de los snippets de resultados.
+    """
+    query = f"{limpiar_query(descripcion)} precio Argentina pesos"
+    url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(query)}"
+    log.info("  DDG: buscando '%s'", limpiar_query(descripcion))
+
+    resp = get(url)
+    if not resp:
+        return None, None
+
+    try:
+        soup = BeautifulSoup(resp.text, "lxml")
+        snippets = soup.select(".result__snippet, .result__body, .result__a")
+        texto = " ".join(s.get_text(" ", strip=True) for s in snippets[:10])
+
+        # Buscar patrones de precio: $1.234.567 o $ 1234567 o ARS 1.234
+        patrones = [
+            r"\$\s?([\d]{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)",
+            r"(?:ARS|pesos)\s*([\d]{1,3}(?:[.,]\d{3})*)",
+            r"([\d]{1,3}(?:\.\d{3})+(?:,\d{2})?)\s*(?:\$|pesos|ars)",
+        ]
+
+        precios = []
+        for pat in patrones:
+            for m in re.finditer(pat, texto, re.I):
+                raw = m.group(1).replace(".", "").replace(",", "")
+                try:
+                    p = float(raw)
+                    # Filtrar precios razonables (>$100 y <$100M)
+                    if 100 < p < 100_000_000:
+                        precios.append(p)
+                except ValueError:
+                    pass
+
+        if not precios:
+            log.warning("  DDG: sin precios en snippets para '%s'", limpiar_query(descripcion))
+            return None, None
+
+        precios.sort()
+        precio_ref = precios[len(precios) // 4]
+        precio_sin_iva = round(precio_ref / 1.21, 2)
+        log.info("  DDG: %d precios encontrados | ref=$%.0f → sin IVA=$%.0f", len(precios), precio_ref, precio_sin_iva)
+        return precio_sin_iva, url
+
+    except Exception as e:
+        log.error("  DDG: error: %s", e)
+        return None, None
+
+
+# Alias para compatibilidad
+def buscar_mercadolibre(descripcion: str) -> tuple[float | None, str | None]:
+    return buscar_mercadolibre_html(descripcion)
+
+def buscar_mercadolibre_api(descripcion: str) -> tuple[float | None, str | None]:
+    return buscar_mercadolibre_html(descripcion)
 
 
 def buscar_precio_claro(descripcion: str) -> tuple[float | None, str | None]:
@@ -139,9 +321,9 @@ def buscar_precio_claro(descripcion: str) -> tuple[float | None, str | None]:
     Fallback: busca en PrecioClaro del gobierno argentino.
     Devuelve (precio_sin_iva, url).
     """
-    query = urllib.parse.quote(descripcion)
+    query = urllib.parse.quote(limpiar_query(descripcion))
     url = f"https://www.precioclaro.gob.ar/precioclaro/rest/precioClaro?cadena=0&query={query}&limit=10"
-    log.info("  PrecioClaro: buscando '%s'", descripcion[:60])
+    log.info("  PrecioClaro: buscando '%s'", limpiar_query(descripcion)[:60])
 
     resp = get(url)
     if not resp:
@@ -205,20 +387,31 @@ def obtener_precio_referencia(descripcion: str, config: dict) -> tuple[float | N
     """
     Orquesta la búsqueda de precios en orden de prioridad.
     Devuelve (precio_sin_iva, fuente).
+
+    Flujo:
+      1. ML API con query limpia
+      2. ML API con query aún más corta (primeras 3 palabras) si falla
+      3. PrecioClaro
+      4. Google CSE (si está configurado)
     """
-    # 1. MercadoLibre
-    precio, fuente = buscar_mercadolibre(descripcion)
+    # 1. MercadoLibre HTML (SSR + JSON embebido)
+    precio, fuente = buscar_mercadolibre_html(descripcion)
     if precio:
         return precio, f"MercadoLibre: {fuente}"
 
-    # 2. PrecioClaro
+    # 2. DuckDuckGo — scraping de snippets con precios
+    precio, fuente = buscar_duckduckgo(descripcion)
+    if precio:
+        return precio, f"DuckDuckGo: {fuente}"
+
+    # 3. PrecioClaro
     precio, fuente = buscar_precio_claro(descripcion)
     if precio:
         return precio, f"PrecioClaro: {fuente}"
 
-    # 3. Google CSE (opcional)
+    # 4. Google CSE (opcional, requiere config)
     precio, fuente = buscar_precio_google(
-        descripcion,
+        limpiar_query(descripcion),
         config.get("google_api_key", ""),
         config.get("google_cse_id", ""),
     )
